@@ -8,50 +8,7 @@
     <script src="https://unpkg.com/moralis/dist/moralis.js"></script>
 </head>
 <body>
-    <div>
-        <button id="btnConnect">Connect Wallet</button>
-        <button id="btnUserInfo">Profile</button>
-        <button id="btnOpenCreateItem">Create Item</button>
-    </div>
 
-    <div id="userInfo">
-        <h4>User Profile</h4>
-        <input type="text" id = "txtUsername" required placeholder="Enter username">
-        <input type="text" id = "txtEmail" placeholder="Enter email">
-        <small>Optional</small>
-
-        <img width = "50" height = "50" src="" id="imgAvatar" alt="">
-        <label for="fileAvatar">Select Avatar</label>
-        <input type="file" id="fileAvatar">
-
-        <button id="btnLogout">Log out</button>
-        <button id="btnCloseUserInfo">Close</button>
-        <button id="btnSaveUserInfo">Save</button>
-    </div>
-
-     <div id="createItem">
-        <h4>Create Item</h4>
-        <input type="text" id = "txtCreateItemName" required placeholder="Enter name">
-        <textarea id="txtCreateItemDescription" cols="30" rows="10" placeholder="Enter description"></textarea>
-        <input type="number" min="1" step="1" id = "numCreateItemPrice" placeholder="Enter price" required>
-
-        <label for="selectCreateItemStatus">Status</label>
-        <select id="selectCreateItemStatus">
-            <option value="0">Not currently taking contributions</option> 
-            <option value="1">Currently taking contributions</option> 
-        </select>
-
-        <label for="txtCreateItemRecipientAddress">Fund Recipient Wallet</label>
-        <input type="text" id="txtCreateItemRecipientAddress" require placeholder="0x0">
-
-        <label for="urlCreateItemUrl">Project Website</label>
-        <input id="urlCreateItemUrl" type="url" pattern="https://.*" required>
-
-        <label for="fileCreateItemFile">Select Avatar</label>
-        <input type="file" id="fileCreateItemFile">
-
-        <button id="btnCloseCreateItem">Close</button>
-        <button id="btnCreateItem">Create</button>
     <script type="text/javascript" src="./main.js"></script>
 </body>
 </html>
