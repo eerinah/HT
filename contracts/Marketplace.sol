@@ -2,10 +2,15 @@ pragma solidity ^0.8.0;
 
 import "../node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "../node_modules/@openzeppelin/contracts/security/Pausable.sol";
 
-contract Market {
-
+contract Market is Pausable {
+    
     using SafeMath for uint256; 
+
+    address[] public adminList;
+    mapping(address => bool) adminMap;
+
     struct AuctionCard {
         uint256 id;
         address tokenAddress;
@@ -13,6 +18,7 @@ contract Market {
         address payable seller; 
         uint256 askingPrice; 
         address payable beneficiary;
+        uint256 fee;
         bool isOwned; // if false, then foreclosed or brand new
     }
 
@@ -53,15 +59,29 @@ contract Market {
 
     /* MODIFIERS */
      
-    //@TODO: modifier for only benefactors 
-    //@TODO: modifier for only patrons 
-    //@TODO: modifier for only admin  
     /**
-     * @notice Requires that only the owner of the car can call a given function.
+     * @notice Requires that only patrons of the card can call a given function
      */
-    modifier OnlyCardOwner(address tokenAddress, uint256 tokenId) {
+     modifier OnlyPatron(uint256 id) {
+        require(auctionCardList[id].seller == msg.sender, 
+            "This operation can only be executed by the card's beneficiary");
+         _;
+     }
+    /**
+     * @notice 
+     */
+     modifier OnlyAdmin(address admin) {
+         require(adminMap[msg.sender], "This operation can only be executed by admin");
+         _;
+     }
+
+    /**
+     * @notice Requires that only the benefactors (minters) of the car can call a given function.
+     */
+    modifier OnlyBenefactor(address tokenAddress, uint256 tokenId) {
         IERC721 tokenContract = IERC721(tokenAddress);
-        require(tokenContract.ownerOf(tokenId) == msg.sender, "Operation can only be executed by card owner");
+        require(tokenContract.ownerOf(tokenId) == msg.sender, 
+            "This operation can only be executed by the card's beneficiary (minter)");
         _;
     }
  
@@ -97,23 +117,23 @@ contract Market {
      /**
       * @notice Lists a card for auction in the market 
       */
-     function addCardToMarket(address tokenAddress, uint256 tokenId, uint256 askingPrice, address payable beneficiary) 
-        OnlyCardOwner(tokenAddress, tokenId) 
+     function addCardToMarket(address tokenAddress, uint256 tokenId, uint256 askingPrice, address payable beneficiary, uint256 fee) 
+        OnlyBenefactor(tokenAddress, tokenId) 
         HasTransferApproval(tokenAddress, tokenId)
         external
         returns(uint256)
         {
+        require(fee > 0, "Card must have a tax rate");
         // @TODO:require that the card isn't for auction yet?
         uint256 newCardId = auctionCardList.length;
-        auctionCardList.push(AuctionCard(newCardId, tokenAddress, tokenId, payable(msg.sender), askingPrice, beneficiary, false));
+        auctionCardList.push(AuctionCard(newCardId, tokenAddress, tokenId, payable(msg.sender), askingPrice, beneficiary, fee, false));
         ownedCard[tokenId] = true;
 
         assert(auctionCardList[newCardId].id == newCardId);
         emit cardAdded(newCardId, tokenId, askingPrice);
         return newCardId;
     } 
-     
-    //TODO: finish function for making a sale 
+
     /**
      *  Forces a sale by buying an already owned card at a higher or equal assessed price.
      */
@@ -184,15 +204,25 @@ contract Market {
         public 
         CardExists(id) 
         IsOwned(id) 
+        OnlyAdmin(msg.sender)
    {
-       require(deposit[msg.sender] == 0 || deposit[msg.sender] < totalOwedTokenCost[msg.sender][id],
+       address owner = auctionCardList[id].seller;
+       require(deposit[owner] == 0 || deposit[owner] < totalOwedTokenCost[owner][id],
         "Patron still has enough funds deposited to retain ownership of the card");
         
         auctionCardList[id].isOwned = false;
-        address prevOwner = auctionCardList[id].seller;
         auctionCardList[id].seller = auctionCardList[id].beneficiary; 
 
-        emit cardForeclosed(id, prevOwner, auctionCardList[id].askingPrice);
+        emit cardForeclosed(id, owner, auctionCardList[id].askingPrice);
    }
-  /* PRIVATE FUNCTIONS */
+
+   function _calculateFee(uint256 id) 
+        view 
+        internal
+        CardExists(id) 
+        IsOwned(id) 
+        returns(uint256)
+   {
+       return (auctionCardList[id].fee).mul(auctionCardList[id].askingPrice);
+   }
 }
