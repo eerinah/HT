@@ -19,11 +19,11 @@
     <div id="userInfo">
         <h4>User Profile</h4>
         <input type="text" id="txtUsername" required placeholder="Enter username">
-        <input type="text" id="txtEmail" placeholder="Enter email">
-        <small>Optional</small>
+        <input type="text" id="txtEmail" placeholder="Enter email (optional)">
+
 
         <img width="50" height="50" src="" id="imgAvatar" alt="">
-        <label for="fileAvatar">Select Avatar</label>
+        <label for="fileAvatar">Select Avatar:</label>
         <input type="file" id="fileAvatar">
 
         <button id="btnLogout">Log out</button>
@@ -35,7 +35,7 @@
     <div id="createItem">
         <h4>Create Item</h4>
         <input type="text" id="txtCreateItemName" required placeholder="Enter name">
-        <textarea id="txtCreateItemDescription" cols="30" rows="5" placeholder="Enter description"></textarea>
+        <textarea class="description" id="txtCreateItemDescription" cols="30" rows="5" placeholder="Enter description"></textarea>
 
         <input type="number" min="1" step="1" id="numCreateItemPrice" placeholder="Enter price" required>
         

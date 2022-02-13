@@ -1,9 +1,9 @@
 
 /* Moralis init code */
-const serverUrl = "https://ifry0n1b6gzi.usemoralis.com:2053/server";
-const appId = "ET7KSpOgupHGNVEfzY00jUumM2J38zKdOYtsQsdw";
+const serverUrl = "https://dycq84n8khsq.usemoralis.com:2053/server";
+const appId = "Yk9EH9SqJ4sjfPzcdUdP6vCddmhTt4tnGztrebRO";
 Moralis.start({ serverUrl, appId });
-const TOKEN_CONTRACT_ADDRESS = "0x44e5d0038fad764777C3cAebbcf86D9084188342";
+const TOKEN_CONTRACT_ADDRESS = "0x66c790fFca236cBfd5Ff85993Cee79AE5e242F67";
 
 init = async () => {
     hideElement(userInfo);
@@ -12,7 +12,6 @@ init = async () => {
     const web3Provider = await Moralis.enableWeb3();
   //  window.tokenContract = new web3Provider.eth.Contract(contractAbi, contractAddress);
     initUser();
-    loadUserItems();
 }
 
 initUser = async () => {
@@ -21,6 +20,7 @@ initUser = async () => {
         showElement(userProfileButton);
         showElement(openCreateItemButton);
         showElement(openUserItemsButton);
+        loadUserItems();
     } else{
         showElement(userConnectButton);
         hideElement(userProfileButton);
@@ -153,15 +153,14 @@ createItem = async () => {
     console.log(item);
 }
 
-mintNft = async(metadataUri, amount) => {
+mintNft = async(metadataUri) => {
     const options = {
-        chain: "ganache",
+        chain: "ropsten",
         address: TOKEN_CONTRACT_ADDRESS,
         function_name: "mintCard",
         abi: tokenContractAbi,
-        params: {uri: metadataUri, fee: amount}
+        params: {uri: metadataUri}
       };
-    const receipt = await Moralis.Web3API.native.runContractFunction(options);
     console.log(receipt);
     return receipt.events.Transfer.returnValues.tokenId;
 }
@@ -178,7 +177,9 @@ openUserItems = async () => { // when clicking My Items
 
 loadUserItems = async () => {
     const ownedItems = await Moralis.Cloud.run("getUserItems");
-    console.log(ownedItems);
+    ownedItems.forEach(item => {
+      getAndRenderItemData(item, renderUserItem)
+    });
 }
 
 
@@ -203,7 +204,10 @@ getAndRenderItemData = (item, renderFunction) => {
   fetch(item.tokenUri)
   .then(response => response.json())
   .then(data => {
-      
+      data.symbol = item.symbol;
+      data.tokenId = item.tokenId;
+      data.tokenAddress = item.tokenAddress;
+      renderFunction(data);
   })
 }
 
@@ -257,128 +261,83 @@ const userItemTemplate = initTemplate("itemTemplate");
 
 var tokenContractAbi = [
     {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
         },
         {
-          "indexed": false,
+          "indexed": true,
+          "internalType": "address",
+          "name": "approved",
+          "type": "address"
+        },
+        {
+          "indexed": true,
           "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "askingPrice",
-          "type": "uint256"
         }
       ],
-      "name": "cardAdded",
+      "name": "Approval",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
+          "indexed": true,
           "internalType": "address",
           "name": "owner",
           "type": "address"
         },
         {
+          "indexed": true,
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
+          "internalType": "bool",
+          "name": "approved",
+          "type": "bool"
         }
       ],
-      "name": "cardDeposit",
+      "name": "ApprovalForAll",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
+          "indexed": true,
           "internalType": "address",
-          "name": "owner",
+          "name": "from",
           "type": "address"
         },
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "askingPrice",
-          "type": "uint256"
-        }
-      ],
-      "name": "cardForeclosed",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
+          "indexed": true,
           "internalType": "address",
-          "name": "buyer",
+          "name": "to",
           "type": "address"
         },
         {
-          "indexed": false,
+          "indexed": true,
           "internalType": "uint256",
-          "name": "askingPrice",
+          "name": "tokenId",
           "type": "uint256"
         }
       ],
-      "name": "cardSold",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "askingPrice",
-          "type": "uint256"
-        }
-      ],
-      "name": "cardUpdatePrice",
+      "name": "Transfer",
       "type": "event"
     },
     {
@@ -389,7 +348,7 @@ var tokenContractAbi = [
           "type": "uint256"
         }
       ],
-      "name": "auctionCardList",
+      "name": "Cards",
       "outputs": [
         {
           "internalType": "uint256",
@@ -397,69 +356,116 @@ var tokenContractAbi = [
           "type": "uint256"
         },
         {
+          "internalType": "string",
+          "name": "uri",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
-          "name": "tokenAddress",
+          "name": "to",
           "type": "address"
         },
         {
           "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
-        },
+        }
+      ],
+      "name": "approve",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
         {
-          "internalType": "address payable",
-          "name": "seller",
+          "internalType": "address",
+          "name": "owner",
           "type": "address"
-        },
+        }
+      ],
+      "name": "balanceOf",
+      "outputs": [
         {
           "internalType": "uint256",
-          "name": "askingPrice",
+          "name": "",
           "type": "uint256"
-        },
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
         {
-          "internalType": "address payable",
-          "name": "beneficiary",
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getApproved",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
           "type": "address"
         },
         {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        }
+      ],
+      "name": "isApprovedForAll",
+      "outputs": [
+        {
           "internalType": "bool",
-          "name": "isOwned",
+          "name": "",
           "type": "bool"
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "benefactorFunds",
+      "inputs": [],
+      "name": "name",
       "outputs": [
         {
-          "internalType": "uint256",
+          "internalType": "string",
           "name": "",
-          "type": "uint256"
+          "type": "string"
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "tokenId",
           "type": "uint256"
         }
       ],
-      "name": "benefactors",
+      "name": "ownerOf",
       "outputs": [
         {
           "internalType": "address",
@@ -468,59 +474,41 @@ var tokenContractAbi = [
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "from",
           "type": "address"
-        }
-      ],
-      "name": "deposit",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true
-    },
-    {
-      "inputs": [
+        },
         {
           "internalType": "address",
-          "name": "",
+          "name": "to",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "tokenId",
           "type": "uint256"
         }
       ],
-      "name": "totalOwedTokenCost",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "name": "safeTransferFrom",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
       "inputs": [
         {
           "internalType": "address",
-          "name": "tokenAddress",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "to",
           "type": "address"
         },
         {
@@ -529,17 +517,98 @@ var tokenContractAbi = [
           "type": "uint256"
         },
         {
-          "internalType": "uint256",
-          "name": "askingPrice",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address payable",
-          "name": "beneficiary",
-          "type": "address"
+          "internalType": "bytes",
+          "name": "_data",
+          "type": "bytes"
         }
       ],
-      "name": "addCardToMarket",
+      "name": "safeTransferFrom",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "approved",
+          "type": "bool"
+        }
+      ],
+      "name": "setApprovalForAll",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes4",
+          "name": "interfaceId",
+          "type": "bytes4"
+        }
+      ],
+      "name": "supportsInterface",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "symbol",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "transferFrom",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "uri",
+          "type": "string"
+        }
+      ],
+      "name": "mintCard",
       "outputs": [
         {
           "internalType": "uint256",
@@ -554,52 +623,19 @@ var tokenContractAbi = [
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "newAssessedPrice",
+          "name": "cardId",
           "type": "uint256"
         }
       ],
-      "name": "forceSale",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function",
-      "payable": true
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        }
-      ],
-      "name": "depositFunds",
+      "name": "tokenURI",
       "outputs": [
         {
-          "internalType": "uint256",
+          "internalType": "string",
           "name": "",
-          "type": "uint256"
+          "type": "string"
         }
       ],
-      "stateMutability": "payable",
-      "type": "function",
-      "payable": true
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        }
-      ],
-      "name": "forecloseCard",
-      "outputs": [],
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     }
   ];
