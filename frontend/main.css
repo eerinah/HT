@@ -1,0 +1,14 @@
+
+
+body {background-color: lightskyblue;}
+.navbar {
+    background-color: #2091d8; /* Green */
+    border: 2px solid #120907;
+    border-radius: 8px;
+    color: #120907;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+  }
